@@ -220,7 +220,7 @@ public class CratesEditorGUI {
         Material material = switch (rarity.getName().toLowerCase()) {
             case "legendary", "legend" -> Material.NETHER_STAR;
             case "epic", "rare" -> Material.AMETHYST_SHARD;
-            case "uncommon", "uncommon" -> Material.EMERALD;
+            case "uncommon" -> Material.EMERALD;
             case "common", "basic" -> Material.COAL;
             default -> Material.DIAMOND;
         };

@@ -225,7 +225,7 @@ public class CrateDataManager {
         if (rarities.size() <= 1) return false;
         
         double targetWeight = targetRarity.getWeight();
-        double totalWeight = rarities.stream().mapToDouble(R::getWeight).sum();
+        double totalWeight = rarities.stream().mapToDouble(RarityData::getWeight).sum();
         double currentPercentage = (targetWeight / totalWeight) * 100.0;
         
         double scaleFactor = targetPercentage / currentPercentage;

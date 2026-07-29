@@ -99,7 +99,7 @@ public class CratesPercentagesCommand implements CommandExecutor, TabCompleter {
             double totalChance = crate.getRarities().values().stream()
                     .mapToDouble(r -> crate.getRarityChance(r.getId()))
                     .sum();
-            sender.sendMessage(ChatColor.YELLOW + (i + 1) + ". " + crate.getId() + 
+            sender.sendMessage(ChatColor.YELLOW + "" + (i + 1) + ". " + crate.getId() + 
                     ChatColor.GRAY + " - " + crate.getRarities().size() + " rarities, " + 
                     crate.getRewards().size() + " rewards");
         }

@@ -8,6 +8,7 @@ import nl.devhub.crateseditor.gui.CratesEditorGUI;
 import nl.devhub.crateseditor.gui.GUIListener;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ExcellentCratesEditor extends JavaPlugin {
@@ -24,16 +25,18 @@ public class ExcellentCratesEditor extends JavaPlugin {
         this.dataManager = new CrateDataManager(this);
         this.gui = new CratesEditorGUI(this);
         
-        registerCommand("crateseditor", new CratesEditorCommand(this));
-        registerCommand("cratespercentages", new CratesPercentagesCommand(this));
-        registerCommand("cratesbalance", new CratesBalanceCommand(this));
-        registerCommand("cratesscale", new CratesScaleCommand(this));
+        CratesEditorCommand editorCmd = new CratesEditorCommand(this);
+        registerCommand("crateseditor", editorCmd, editorCmd);
+        registerCommand("cratespercentages", new CratesPercentagesCommand(this), new CratesPercentagesCommand(this));
+        registerCommand("cratesbalance", new CratesBalanceCommand(this), new CratesBalanceCommand(this));
+        registerCommand("cratesscale", new CratesScaleCommand(this), new CratesScaleCommand(this));
         
         getServer().getPluginManager().registerEvents(new GUIListener(this, gui), this);
         
+        // Override crateseditor to open GUI when no args
         getCommand("crateseditor").setExecutor((sender, command, label, args) -> {
-            if (sender.hasPermission("crateseditor.use") && args.length == 0) {
-                gui.openCratesList(sender);
+            if (sender.hasPermission("crateseditor.use") && args.length == 0 && sender instanceof Player player) {
+                gui.openCratesList(player);
                 return true;
             }
             return false;
@@ -51,11 +54,11 @@ public class ExcellentCratesEditor extends JavaPlugin {
         getLogger().info("ExcellentCrates Editor disabled!");
     }
 
-    private void registerCommand(String name, Object executor) {
+    private void registerCommand(String name, CommandExecutor executor, TabCompleter tabCompleter) {
         org.bukkit.command.Command command = getCommand(name);
         if (command != null) {
-            command.setExecutor((CommandExecutor) executor);
-            command.setTabCompleter((TabCompleter) executor);
+            command.setExecutor(executor);
+            command.setTabCompleter(tabCompleter);
         }
     }
 

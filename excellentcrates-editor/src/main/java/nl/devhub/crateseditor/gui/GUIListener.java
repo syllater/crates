@@ -187,10 +187,10 @@ public class GUIListener implements Listener {
         RarityData rarity = crate.getRarity(rarityId);
         if (rarity == null) return;
 
-        List<RewardData> rewards = crate.getRewardsByRarity(rarityId);
-        if (rewards.isEmpty()) return;
+        Collection<RewardData> rewardCollection = crate.getRewardsByRarity(rarityId);
+        if (rewardCollection.isEmpty()) return;
 
-        RewardData reward = rewards.iterator().next();
+        RewardData reward = rewardCollection.iterator().next();
 
         double currentWeight = reward.getWeight();
         double newWeight = currentWeight;

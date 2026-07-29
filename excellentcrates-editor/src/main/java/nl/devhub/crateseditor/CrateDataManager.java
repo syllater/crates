@@ -14,14 +14,31 @@ public class CrateDataManager {
     private final File cratesFolder;
     private Map<String, CrateData> crates;
     private boolean needsSave;
-
-    public CrateDataManager(ExcellentCratesEditor plugin) {
+public CrateDataManager(ExcellentCratesEditor plugin) {
         this.plugin = plugin;
-        this.cratesFolder = new File(plugin.getDataFolder().getParentFile(), "ExcellentCrates/crates");
+        
+        File dataFolder = plugin.getDataFolder();
+        File pluginsFolder = dataFolder.getParentFile();
+        
+        File[] possiblePaths = {
+            new File(pluginsFolder, "ExcellentCrates/crates"),
+            new File(pluginsFolder, "ExcellentCrates"),
+            new File(dataFolder, "../ExcellentCrates/crates"),
+        };
+        
+        this.cratesFolder = findExistingFolder(possiblePaths);
+        plugin.getLogger().info("Using crates folder: " + this.cratesFolder.getPath());
+        
         this.crates = new HashMap<>();
         this.needsSave = false;
-        
         loadAll();
+    }
+    
+    private File findExistingFolder(File[] paths) {
+        for (File path : paths) {
+            if (path.exists() && path.isDirectory()) return path;
+        }
+        return paths[0];
     }
 
     public void loadAll() {

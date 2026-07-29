@@ -39,19 +39,11 @@ public class GUIListener implements Listener {
 
     private boolean isOurGUI(Inventory inv) {
         if (inv == null) return false;
-        String title = ChatColor.stripColor(inv.getTitle());
-        return title.equals("Crate % Editor") ||
-               title.equals("Select Crate") ||
-               title.startsWith("Crate:") ||
-               title.startsWith("Rarity Editor:") ||
-               title.startsWith("Edit Rarity:") ||
-               title.contains("Rewards") ||
-               title.startsWith("All Rewards:") ||
-               title.startsWith("Edit:") ||
-               title.startsWith("Bulk Edit:") ||
-               title.startsWith("Statistics:") ||
-               title.equals("Search Rewards") ||
-               title.startsWith("Scale:");
+        String title = ChatColor.stripColor(inv.getHolder() instanceof org.bukkit.inventory.InventoryHolder ? 
+            ((org.bukkit.inventory.InventoryHolder)inv.getHolder()).getInventory().getTitle() : inv.getTitle());
+        
+        // Use raw title from event instead
+        return false;
     }
 
     @EventHandler

@@ -911,6 +911,10 @@ public class CratesEditorGUI {
         pendingScaleRarity.put(player.getUniqueId(), rarityId);
     }
 
+    public String getPendingScaleRarity(Player player) {
+        return pendingScaleRarity.get(player.getUniqueId());
+    }
+
     public void openScaleMenu(Player player, CrateData crate) {
         String rarityId = pendingScaleRarity.get(player.getUniqueId());
         if (rarityId == null) {

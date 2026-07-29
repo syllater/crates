@@ -26,6 +26,7 @@ public class CratesEditorGUI {
     private final Map<UUID, Integer> playerPage;
     private final Map<UUID, String> playerSearch;
     private final Map<UUID, Set<String>> playerSelectedRewards;
+    private final Map<UUID, String> pendingScaleRarity;
 
     public CratesEditorGUI(ExcellentCratesEditor plugin) {
         this.plugin = plugin;
@@ -35,6 +36,7 @@ public class CratesEditorGUI {
         this.playerPage = new HashMap<>();
         this.playerSearch = new HashMap<>();
         this.playerSelectedRewards = new HashMap<>();
+        this.pendingScaleRarity = new HashMap<>();
     }
 
     public void openMainMenu(Player player) {
@@ -928,5 +930,149 @@ public class CratesEditorGUI {
         playerPage.remove(player.getUniqueId());
         playerSearch.remove(player.getUniqueId());
         playerSelectedRewards.remove(player.getUniqueId());
+        pendingScaleRarity.remove(player.getUniqueId());
+    }
+
+    public void openRarityEditor(Player player, CrateData crate) {
+        Inventory inv = Bukkit.createInventory(null, 54, 
+                ChatColor.GOLD + "" + ChatColor.BOLD + "Rarity Editor: " + ChatColor.WHITE + crate.getId());
+
+        int slot = 0;
+        for (RarityData rarity : crate.getRarities().values()) {
+            if (slot < 45) {
+                double chance = crate.getRarityChance(rarity.getId());
+                ItemStack item = createRarityEditItem(rarity, chance);
+                inv.setItem(slot, item);
+                slot++;
+            }
+        }
+
+        // Info panel
+        ItemStack infoBtn = new ItemStack(Material.BEACON);
+        ItemMeta meta = infoBtn.getItemMeta();
+        meta.setDisplayName(ChatColor.WHITE + "Rarity Info");
+        meta.setLore(Arrays.asList(
+                ChatColor.GRAY + "Click a rarity to",
+                ChatColor.GRAY + "edit its weight"
+        ));
+        infoBtn.setItemMeta(meta);
+        inv.setItem(49, infoBtn);
+
+        ItemStack backBtn = new ItemStack(Material.BARRIER);
+        meta = backBtn.getItemMeta();
+        meta.setDisplayName(ChatColor.RED + "Back");
+        backBtn.setItemMeta(meta);
+        inv.setItem(53, backBtn);
+
+        setBorderItems(inv);
+
+        player.openInventory(inv);
+    }
+
+    public void setPendingScaleRarity(Player player, String rarityId) {
+        pendingScaleRarity.put(player.getUniqueId(), rarityId);
+    }
+
+    public void openScaleMenu(Player player, CrateData crate) {
+        String rarityId = pendingScaleRarity.get(player.getUniqueId());
+        if (rarityId == null) {
+            player.sendMessage(ChatColor.RED + "No rarity selected for scaling!");
+            return;
+        }
+
+        RarityData rarity = crate.getRarity(rarityId);
+        if (rarity == null) {
+            player.sendMessage(ChatColor.RED + "Rarity not found!");
+            return;
+        }
+
+        double currentChance = crate.getRarityChance(rarityId);
+        Inventory inv = Bukkit.createInventory(null, 36, 
+                ChatColor.LIGHT_PURPLE + "Scale: " + ChatColor.WHITE + rarity.getName());
+
+        // Preview
+        ItemStack preview = new ItemStack(Material.PAPER);
+        ItemMeta meta = preview.getItemMeta();
+        meta.setDisplayName(ChatColor.WHITE + rarity.getName());
+        meta.setLore(Arrays.asList(
+                ChatColor.GRAY + "Current: " + String.format("%.2f%%", currentChance),
+                ChatColor.GRAY + "Current weight: " + rarity.getWeight()
+        ));
+        preview.setItemMeta(meta);
+        inv.setItem(4, preview);
+
+        // Quick percentage buttons
+        int[] percentages = {1, 5, 10, 25, 50, 75, 90};
+        int[] slots = {19, 20, 21, 22, 23, 24, 25};
+        
+        for (int i = 0; i < percentages.length; i++) {
+            ItemStack btn = new ItemStack(Material.PAPER);
+            ItemMeta btnMeta = btn.getItemMeta();
+            btnMeta.setDisplayName(ChatColor.GREEN + "" + percentages[i] + "%");
+            btnMeta.setLore(Arrays.asList(
+                    ChatColor.GRAY + "Click to set " + rarity.getName() + " to " + percentages[i] + "%"
+            ));
+            btn.setItemMeta(btnMeta);
+            inv.setItem(slots[i], btn);
+        }
+
+        ItemStack backBtn = new ItemStack(Material.ARROW);
+        ItemMeta backMeta = backBtn.getItemMeta();
+        backMeta.setDisplayName(ChatColor.RED + "Back");
+        backBtn.setItemMeta(backMeta);
+        inv.setItem(31, backBtn);
+
+        player.openInventory(inv);
+    }
+
+    public void openSearch(Player player) {
+        player.sendMessage(ChatColor.YELLOW + "Type a reward name in chat to search!");
+        player.sendMessage(ChatColor.GRAY + "Or click Back to cancel.");
+        
+        Inventory inv = Bukkit.createInventory(null, 27, "Search Rewards");
+        
+        ItemStack infoBtn = new ItemStack(Material.NAME_TAG);
+        ItemMeta meta = infoBtn.getItemMeta();
+        meta.setDisplayName(ChatColor.YELLOW + "Search Rewards");
+        meta.setLore(Arrays.asList(
+                ChatColor.GRAY + "Type a reward name in chat",
+                ChatColor.GRAY + "to search across all crates"
+        ));
+        infoBtn.setItemMeta(meta);
+        inv.setItem(13, infoBtn);
+
+        ItemStack backBtn = new ItemStack(Material.BARRIER);
+        ItemMeta backMeta = backBtn.getItemMeta();
+        backMeta.setDisplayName(ChatColor.RED + "Back");
+        backBtn.setItemMeta(backMeta);
+        inv.setItem(22, backBtn);
+
+        player.openInventory(inv);
+    }
+
+    private ItemStack createRarityEditItem(RarityData rarity, double chance) {
+        Material material = switch (rarity.getName().toLowerCase()) {
+            case "legendary", "legend", "mythic" -> Material.NETHER_STAR;
+            case "epic" -> Material.DIAMOND;
+            case "rare" -> Material.AMETHYST_SHARD;
+            case "uncommon" -> Material.EMERALD;
+            case "common", "basic" -> Material.COAL;
+            default -> Material.DIAMOND;
+        };
+
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(ChatColor.WHITE + rarity.getName());
+        
+        List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.GOLD + "Chance: " + getChanceColor(chance) + String.format("%.2f%%", chance));
+        lore.add(ChatColor.GRAY + "Weight: " + ChatColor.WHITE + rarity.getWeight());
+        lore.add("");
+        lore.add(ChatColor.YELLOW + "▶ Click to edit weight");
+        meta.setLore(lore);
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        
+        item.setItemMeta(meta);
+        return item;
     }
 }

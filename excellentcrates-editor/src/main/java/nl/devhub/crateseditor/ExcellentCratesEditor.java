@@ -8,7 +8,6 @@ import nl.devhub.crateseditor.commands.CrateGUICommand;
 import nl.devhub.crateseditor.gui.CratesEditorGUI;
 import nl.devhub.crateseditor.gui.GUIListener;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ExcellentCratesEditor extends JavaPlugin {
@@ -30,18 +29,23 @@ public class ExcellentCratesEditor extends JavaPlugin {
         this.dataManager = new CrateDataManager(this);
         this.gui = new CratesEditorGUI(this);
         
+        CrateGUICommand guiCommand = new CrateGUICommand();
         this.editorCommand = new CratesEditorCommand(this);
         this.percentagesCommand = new CratesPercentagesCommand(this);
         this.balanceCommand = new CratesBalanceCommand(this);
         this.scaleCommand = new CratesScaleCommand(this);
         
-        // Register GUI command
-        new CrateGUICommand();
+        // Register all commands
+        getCommand("crategui").setExecutor(guiCommand);
+        getCommand("crateseditor").setExecutor(editorCommand);
+        getCommand("cratespercentages").setExecutor(percentagesCommand);
+        getCommand("cratesbalance").setExecutor(balanceCommand);
+        getCommand("cratesscale").setExecutor(scaleCommand);
         
         getServer().getPluginManager().registerEvents(new GUIListener(this, gui), this);
         
         getLogger().info("ExcellentCrates Editor enabled!");
-        getLogger().info("Use " + ChatColor.YELLOW + "/ce" + ChatColor.WHITE + " to open the GUI editor");
+        getLogger().info("Use " + ChatColor.YELLOW + "/crategui" + ChatColor.WHITE + " or " + ChatColor.YELLOW + "/cg" + ChatColor.WHITE + " to open the GUI editor");
     }
 
     @Override

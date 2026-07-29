@@ -195,28 +195,20 @@ public class CratesEditorGUI {
 
         int slot = 0;
         
-        // Show rarities if available
-        if (!crate.getRarities().isEmpty()) {
-            for (RarityData rarity : crate.getRarities().values()) {
-                if (slot < 36) {
-                    double chance = crate.getRarityChance(rarity.getId());
-                    ItemStack item = createRarityItem(rarity, chance, crate.getRewardsByRarity(rarity.getId()).size());
-                    inv.setItem(slot, item);
-                    slot++;
-                }
-            }
-        } else {
-            // If no rarities, show all rewards directly
-            List<RewardData> rewards = new ArrayList<>(crate.getRewards().values());
-            rewards.sort((a, b) -> Double.compare(crate.getRewardChance(b.getId()), crate.getRewardChance(a.getId())));
-            
-            for (RewardData reward : rewards) {
-                if (slot < 36) {
-                    double chance = crate.getRewardChance(reward.getId());
-                    ItemStack item = createRewardItem(reward, chance);
-                    inv.setItem(slot, item);
-                    slot++;
-                }
+        // Show all rewards sorted by rarity then by chance
+        List<RewardData> rewards = new ArrayList<>(crate.getRewards().values());
+        rewards.sort((a, b) -> {
+            int rarityCompare = a.getRarityId().compareToIgnoreCase(b.getRarityId());
+            if (rarityCompare != 0) return rarityCompare;
+            return Double.compare(crate.getRewardChance(b.getId()), crate.getRewardChance(a.getId()));
+        });
+        
+        for (RewardData reward : rewards) {
+            if (slot < 36) {
+                double chance = crate.getRewardChance(reward.getId());
+                ItemStack item = createRewardItem(reward, chance);
+                inv.setItem(slot, item);
+                slot++;
             }
         }
 
@@ -742,6 +734,7 @@ public class CratesEditorGUI {
         meta.setDisplayName(ChatColor.WHITE + truncate(displayName, 30));
         
         List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.GRAY + "Rarity: " + ChatColor.AQUA + reward.getRarityId());
         lore.add(ChatColor.GRAY + "Weight: " + ChatColor.WHITE + reward.getWeight());
         lore.add(ChatColor.GRAY + "Chance: " + getChanceColor(chance) + String.format("%.4f%%", chance));
         lore.add("");

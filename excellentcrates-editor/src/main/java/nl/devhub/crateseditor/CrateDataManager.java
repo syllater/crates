@@ -318,6 +318,13 @@ public class CrateDataManager {
             this.rewardChances.clear();
         }
 
+        public Collection<String> getRewardRarities() {
+            return rewards.values().stream()
+                    .map(RewardData::getRarityId)
+                    .distinct()
+                    .collect(Collectors.toList());
+        }
+
         private void calculateChances() {
             if (!rarityChances.isEmpty()) return;
             

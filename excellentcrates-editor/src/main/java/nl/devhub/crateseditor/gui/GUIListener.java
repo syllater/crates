@@ -153,27 +153,18 @@ public class GUIListener implements Listener {
         if (slot == 44) { gui.openBulkEdit(player, crate); return; }
 
         if (slot >= 0 && slot < 36) {
-            // If no rarities, handle rewards directly
-            if (crate.getRarities().isEmpty()) {
-                List<RewardData> rewards = new ArrayList<>(crate.getRewards().values());
-                rewards.sort((a, b) -> Double.compare(crate.getRewardChance(b.getId()), crate.getRewardChance(a.getId())));
-                if (slot < rewards.size()) {
-                    RewardData reward = rewards.get(slot);
-                    gui.openRewardEditor(player, crate, reward, null);
-                }
-                return;
-            }
+            // Handle rewards directly - open reward editor
+            List<RewardData> rewards = new ArrayList<>(crate.getRewards().values());
+            rewards.sort((a, b) -> {
+                int rarityCompare = a.getRarityId().compareToIgnoreCase(b.getRarityId());
+                if (rarityCompare != 0) return rarityCompare;
+                return Double.compare(crate.getRewardChance(b.getId()), crate.getRewardChance(a.getId()));
+            });
             
-            List<RarityData> rarityList = new ArrayList<>(crate.getRarities().values());
-            if (slot < rarityList.size()) {
-                RarityData rarity = rarityList.get(slot);
-                String mode = gui.getPlayerMode(player);
-                if ("scale".equals(mode)) {
-                    gui.setPendingScaleRarity(player, rarity.getId());
-                    gui.openScaleMenu(player, crate);
-                } else {
-                    gui.openRarityRewardsList(player, crate, rarity);
-                }
+            if (slot < rewards.size()) {
+                RewardData reward = rewards.get(slot);
+                RarityData rarity = crate.getRarity(reward.getRarityId());
+                gui.openRewardEditor(player, crate, reward, rarity);
             }
         }
     }

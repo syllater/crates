@@ -6,6 +6,11 @@ authors:
   - DevHub
 description: Easy percentage editor for ExcellentCrates plugin
 commands:
+  crategui:
+    description: Open the Crate Percentage Editor GUI
+    usage: /crategui
+    aliases: [cg, editorgui, cegui]
+    executor: nl.devhub.crateseditor.commands.CrateGUICommand
   crateseditor:
     description: Main command for ExcellentCrates Editor
     usage: /crateseditor <subcommand>

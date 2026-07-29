@@ -4,6 +4,7 @@ import nl.devhub.crateseditor.commands.CratesBalanceCommand;
 import nl.devhub.crateseditor.commands.CratesEditorCommand;
 import nl.devhub.crateseditor.commands.CratesPercentagesCommand;
 import nl.devhub.crateseditor.commands.CratesScaleCommand;
+import nl.devhub.crateseditor.commands.CrateGUICommand;
 import nl.devhub.crateseditor.gui.CratesEditorGUI;
 import nl.devhub.crateseditor.gui.GUIListener;
 import org.bukkit.ChatColor;
@@ -33,6 +34,9 @@ public class ExcellentCratesEditor extends JavaPlugin {
         this.percentagesCommand = new CratesPercentagesCommand(this);
         this.balanceCommand = new CratesBalanceCommand(this);
         this.scaleCommand = new CratesScaleCommand(this);
+        
+        // Register GUI command
+        new CrateGUICommand();
         
         getServer().getPluginManager().registerEvents(new GUIListener(this, gui), this);
         

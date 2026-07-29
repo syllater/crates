@@ -194,12 +194,29 @@ public class CratesEditorGUI {
                 ChatColor.DARK_PURPLE + "Crate: " + ChatColor.WHITE + crate.getId());
 
         int slot = 0;
-        for (RarityData rarity : crate.getRarities().values()) {
-            if (slot < 36) {
-                double chance = crate.getRarityChance(rarity.getId());
-                ItemStack item = createRarityItem(rarity, chance, crate.getRewardsByRarity(rarity.getId()).size());
-                inv.setItem(slot, item);
-                slot++;
+        
+        // Show rarities if available
+        if (!crate.getRarities().isEmpty()) {
+            for (RarityData rarity : crate.getRarities().values()) {
+                if (slot < 36) {
+                    double chance = crate.getRarityChance(rarity.getId());
+                    ItemStack item = createRarityItem(rarity, chance, crate.getRewardsByRarity(rarity.getId()).size());
+                    inv.setItem(slot, item);
+                    slot++;
+                }
+            }
+        } else {
+            // If no rarities, show all rewards directly
+            List<RewardData> rewards = new ArrayList<>(crate.getRewards().values());
+            rewards.sort((a, b) -> Double.compare(crate.getRewardChance(b.getId()), crate.getRewardChance(a.getId())));
+            
+            for (RewardData reward : rewards) {
+                if (slot < 36) {
+                    double chance = crate.getRewardChance(reward.getId());
+                    ItemStack item = createRewardItem(reward, chance);
+                    inv.setItem(slot, item);
+                    slot++;
+                }
             }
         }
 
@@ -411,6 +428,7 @@ public class CratesEditorGUI {
     public void openRewardEditor(Player player, CrateData crate, RewardData reward, RarityData rarity) {
         playerEditingReward.put(player.getUniqueId(), reward.getId());
         double currentChance = crate.getRewardChance(reward.getId());
+        String rarityName = rarity != null ? rarity.getName() : "Unknown";
 
         Inventory inv = Bukkit.createInventory(null, 36, 
                 ChatColor.DARK_GREEN + "Edit: " + ChatColor.WHITE + truncate(reward.getPreviewName(), 20));
@@ -421,7 +439,7 @@ public class CratesEditorGUI {
         meta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + reward.getPreviewName());
         meta.setLore(Arrays.asList(
                 ChatColor.GRAY + "ID: " + reward.getId(),
-                ChatColor.GRAY + "Rarity: " + rarity.getName(),
+                ChatColor.GRAY + "Rarity: " + rarityName,
                 "",
                 ChatColor.GOLD + "Chance: " + String.format("%.4f%%", currentChance),
                 ChatColor.GRAY + "Weight: " + reward.getWeight()

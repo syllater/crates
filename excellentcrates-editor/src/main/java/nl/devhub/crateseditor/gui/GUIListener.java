@@ -153,6 +153,17 @@ public class GUIListener implements Listener {
         if (slot == 44) { gui.openBulkEdit(player, crate); return; }
 
         if (slot >= 0 && slot < 36) {
+            // If no rarities, handle rewards directly
+            if (crate.getRarities().isEmpty()) {
+                List<RewardData> rewards = new ArrayList<>(crate.getRewards().values());
+                rewards.sort((a, b) -> Double.compare(crate.getRewardChance(b.getId()), crate.getRewardChance(a.getId())));
+                if (slot < rewards.size()) {
+                    RewardData reward = rewards.get(slot);
+                    gui.openRewardEditor(player, crate, reward, null);
+                }
+                return;
+            }
+            
             List<RarityData> rarityList = new ArrayList<>(crate.getRarities().values());
             if (slot < rarityList.size()) {
                 RarityData rarity = rarityList.get(slot);
@@ -270,11 +281,11 @@ public class GUIListener implements Listener {
         CrateData crate = gui.getPlayerCrate(player);
         String rarityId = gui.getPlayerRarity(player);
         String rewardId = gui.getPlayerReward(player);
-        if (crate == null || rarityId == null || rewardId == null) { gui.openMainMenu(player); return; }
+        if (crate == null || rewardId == null) { gui.openMainMenu(player); return; }
 
-        RarityData rarity = crate.getRarity(rarityId);
+        RarityData rarity = rarityId != null ? crate.getRarity(rarityId) : null;
         RewardData reward = crate.getReward(rewardId);
-        if (rarity == null || reward == null) { gui.openCrateEditor(player, crate); return; }
+        if (reward == null) { gui.openCrateEditor(player, crate); return; }
 
         double currentWeight = reward.getWeight();
         double newWeight = currentWeight;
@@ -298,8 +309,8 @@ public class GUIListener implements Listener {
             dataManager.setRewardWeight(crate.getId(), rewardId, newWeight);
             crate = dataManager.getCrate(crate.getId());
             reward = crate.getReward(rewardId);
-            rarity = crate.getRarity(rarityId);
-            if (reward != null && rarity != null) {
+            rarity = rarityId != null ? crate.getRarity(rarityId) : null;
+            if (reward != null) {
                 player.sendMessage(ChatColor.GREEN + "✓ Weight: " + newWeight + " (" + String.format("%.4f%%", crate.getRewardChance(rewardId)) + ")");
                 gui.openRewardEditor(player, crate, reward, rarity);
             }

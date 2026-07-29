@@ -17,8 +17,12 @@ import java.util.stream.Collectors;
 
 public class CratesEditorCommand implements CommandExecutor, TabCompleter {
 
-    private final ExcellentCratesEditor plugin;
+    private ExcellentCratesEditor plugin;
 
+    public CratesEditorCommand() {
+        this.plugin = ExcellentCratesEditor.getInstance();
+    }
+    
     public CratesEditorCommand(ExcellentCratesEditor plugin) {
         this.plugin = plugin;
     }

@@ -21,9 +21,13 @@ import java.util.stream.Collectors;
 
 public class CratesPercentagesCommand implements CommandExecutor, TabCompleter {
 
-    private final ExcellentCratesEditor plugin;
+    private ExcellentCratesEditor plugin;
     private static final int ITEMS_PER_PAGE = 10;
 
+    public CratesPercentagesCommand() {
+        this.plugin = ExcellentCratesEditor.getInstance();
+    }
+    
     public CratesPercentagesCommand(ExcellentCratesEditor plugin) {
         this.plugin = plugin;
     }

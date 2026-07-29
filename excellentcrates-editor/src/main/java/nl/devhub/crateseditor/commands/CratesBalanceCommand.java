@@ -18,8 +18,12 @@ import java.util.stream.Collectors;
 
 public class CratesBalanceCommand implements CommandExecutor, TabCompleter {
 
-    private final ExcellentCratesEditor plugin;
+    private ExcellentCratesEditor plugin;
 
+    public CratesBalanceCommand() {
+        this.plugin = ExcellentCratesEditor.getInstance();
+    }
+    
     public CratesBalanceCommand(ExcellentCratesEditor plugin) {
         this.plugin = plugin;
     }

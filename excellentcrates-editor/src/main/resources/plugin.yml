@@ -10,18 +10,22 @@ commands:
     description: Main command for ExcellentCrates Editor
     usage: /crateseditor <subcommand>
     aliases: [ce, crateeditor]
+    executor: nl.devhub.crateseditor.commands.CratesEditorCommand
   cratespercentages:
     description: View and manage crate percentages
     usage: /cratespercentages <crate> [rarity] [page]
     aliases: [cp]
+    executor: nl.devhub.crateseditor.commands.CratesPercentagesCommand
   cratesbalance:
     description: Auto-balance crate percentages
     usage: /cratesbalance <crate> [rarity]
     aliases: [cb]
+    executor: nl.devhub.crateseditor.commands.CratesBalanceCommand
   cratesscale:
     description: Scale rarity weights to match percentages
     usage: /cratesscale <crate> <rarity> <percentage>
     aliases: [cs]
+    executor: nl.devhub.crateseditor.commands.CratesScaleCommand
 permissions:
   crateseditor.use:
     description: Allows using the ExcellentCrates Editor

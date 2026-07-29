@@ -14,9 +14,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GUIListener implements Listener {
 
@@ -34,23 +34,46 @@ public class GUIListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        String title = event.getView().getTitle();
+        String title = ChatColor.stripColor(event.getView().getTitle());
 
-        if (title.startsWith(ChatColor.DARK_PURPLE + "Crates Editor")) {
+        if (title.contains("Crates Editor") && !title.contains("Crate:") && !title.contains("Select Crate")) {
+            event.setCancelled(true);
+            handleMainMenuClick(player, event);
+        }
+        else if (title.equals("Select Crate")) {
             event.setCancelled(true);
             handleCratesListClick(player, event);
         }
-        else if (title.startsWith(ChatColor.DARK_PURPLE + "Crate:")) {
+        else if (title.startsWith("Crate:")) {
             event.setCancelled(true);
             handleCrateEditorClick(player, event);
         }
-        else if (title.startsWith(ChatColor.DARK_AQUA + "Rarity:")) {
+        else if (title.startsWith("Rarity:")) {
             event.setCancelled(true);
             handleRarityEditorClick(player, event);
         }
-        else if (title.startsWith(ChatColor.DARK_GREEN + "Edit Reward")) {
+        else if (title.startsWith("Edit:") || title.contains("Reward")) {
             event.setCancelled(true);
             handleRewardEditClick(player, event);
+        }
+        else if (title.startsWith("All Rewards:")) {
+            event.setCancelled(true);
+            handleAllRewardsClick(player, event);
+        }
+    }
+
+    private void handleMainMenuClick(Player player, InventoryClickEvent event) {
+        int slot = event.getRawSlot();
+        ItemStack item = event.getCurrentItem();
+        if (item == null || item.getType() == Material.AIR) return;
+
+        if (slot == 11) { // Edit Crates
+            gui.openCratesList(player);
+        }
+        else if (slot == 22) { // Reload
+            dataManager.loadAll();
+            player.sendMessage(ChatColor.GREEN + "✓ Crate data reloaded!");
+            gui.openMainMenu(player);
         }
     }
 
@@ -59,26 +82,31 @@ public class GUIListener implements Listener {
         ItemStack item = event.getCurrentItem();
         if (item == null || item.getType() == Material.AIR) return;
 
-        Collection<CrateData> crates = dataManager.getAllCrates();
-        List<CrateData> crateList = crates.stream().collect(Collectors.toList());
-        int page = gui.getPlayerCrate(player) != null ? 0 : gui.getPrevPage(player);
-        int start = page * 45;
+        if (slot == 49) { // Back
+            gui.openMainMenu(player);
+            return;
+        }
 
-        if (slot == 45) {
+        if (slot == 45) { // Previous
             gui.getPrevPage(player);
             gui.openCratesList(player);
             return;
         }
-        if (slot == 48) return;
-        if (slot == 50) {
+        if (slot == 50) { // Next
             gui.getNextPage(player);
             gui.openCratesList(player);
             return;
         }
 
-        if (slot >= 0 && slot < 45 && slot < crateList.size()) {
-            CrateData crate = crateList.get(start + slot);
-            gui.openCrateEditor(player, crate);
+        if (slot >= 0 && slot < 45) {
+            List<CrateData> crateList = new ArrayList<>(dataManager.getAllCrates());
+            int page = gui.getPrevPage(player);
+            int start = page * 45;
+
+            if (start + slot < crateList.size()) {
+                CrateData crate = crateList.get(start + slot);
+                gui.openCrateEditor(player, crate);
+            }
         }
     }
 
@@ -88,36 +116,41 @@ public class GUIListener implements Listener {
         if (item == null || item.getType() == Material.AIR) return;
 
         CrateData crate = gui.getPlayerCrate(player);
-        if (crate == null) return;
-
-        if (slot == 49) {
-            String rarityId = gui.getPlayerRarity(player);
-            if (rarityId != null) {
-                RarityData rarity = crate.getRarity(rarityId);
-                if (rarity != null) {
-                    gui.openRarityEditor(player, crate, rarity);
-                }
-            }
+        if (crate == null) {
+            gui.openCratesList(player);
             return;
         }
 
-        if (slot == 50) {
-            dataManager.balanceAllRarities(crate.getId());
-            player.sendMessage(ChatColor.GREEN + "Balanced all weights in " + crate.getId());
-            gui.openCrateEditor(player, crate);
+        if (slot == 53) { // Back
+            gui.openCratesList(player);
             return;
         }
-
-        if (slot == 53) {
+        if (slot == 45) { // Refresh
             dataManager.loadAll();
             crate = dataManager.getCrate(crate.getId());
             gui.openCrateEditor(player, crate);
-            player.sendMessage(ChatColor.YELLOW + "Reloaded crate data");
+            player.sendMessage(ChatColor.YELLOW + "✓ Refreshed!");
+            return;
+        }
+        if (slot == 40) { // Balance All
+            dataManager.balanceAllRarities(crate.getId());
+            crate = dataManager.getCrate(crate.getId());
+            gui.openCrateEditor(player, crate);
+            player.sendMessage(ChatColor.GREEN + "✓ All weights balanced!");
+            return;
+        }
+        if (slot == 36) { // All Rewards
+            gui.openAllRewardsList(player, crate);
+            return;
+        }
+        if (slot == 44) { // Scale Rarity - show message
+            player.sendMessage(ChatColor.YELLOW + "Use " + ChatColor.WHITE + "/ce scale <crate> <rarity> <percentage>");
             return;
         }
 
-        if (slot >= 0 && slot < 45) {
-            List<RarityData> rarityList = crate.getRarities().values().stream().collect(Collectors.toList());
+        // Rarity clicks (slots 0-35)
+        if (slot >= 0 && slot < 36) {
+            List<RarityData> rarityList = new ArrayList<>(crate.getRarities().values());
             if (slot < rarityList.size()) {
                 RarityData rarity = rarityList.get(slot);
                 gui.openRarityEditor(player, crate, rarity);
@@ -132,43 +165,97 @@ public class GUIListener implements Listener {
 
         CrateData crate = gui.getPlayerCrate(player);
         String rarityId = gui.getPlayerRarity(player);
-        if (crate == null || rarityId == null) return;
+        if (crate == null || rarityId == null) {
+            gui.openMainMenu(player);
+            return;
+        }
 
         RarityData rarity = crate.getRarity(rarityId);
-        if (rarity == null) return;
-
-        if (slot == 48) {
+        if (rarity == null) {
             gui.openCrateEditor(player, crate);
             return;
         }
 
-        if (slot == 49) {
+        if (slot == 53) { // Back
+            gui.openCrateEditor(player, crate);
+            return;
+        }
+        if (slot == 49) { // Balance Rewards
             dataManager.balanceRarityWeights(crate.getId(), rarityId);
-            player.sendMessage(ChatColor.GREEN + "Balanced rewards in " + rarity.getName());
-            gui.openRarityEditor(player, crate, rarity);
+            crate = dataManager.getCrate(crate.getId());
+            player.sendMessage(ChatColor.GREEN + "✓ Balanced rewards in " + rarity.getName());
+            gui.openRarityEditor(player, crate, crate.getRarity(rarityId));
             return;
         }
 
-        if (slot == 45) {
+        if (slot == 45) { // Previous
             gui.getPrevPage(player);
             gui.openRarityEditor(player, crate, rarity);
             return;
         }
-        if (slot == 50) {
+        if (slot == 50) { // Next
             gui.getNextPage(player);
             gui.openRarityEditor(player, crate, rarity);
             return;
         }
 
+        // Reward clicks (slots 0-44)
         if (slot >= 0 && slot < 45) {
             Collection<RewardData> rewards = crate.getRewardsByRarity(rarityId);
-            List<RewardData> rewardList = rewards.stream().collect(Collectors.toList());
+            List<RewardData> rewardList = new ArrayList<>(rewards);
             int page = gui.getPrevPage(player);
             int start = page * 45;
 
             if (start + slot < rewardList.size()) {
                 RewardData reward = rewardList.get(start + slot);
-                gui.openRewardEditor(player, crate, reward);
+                gui.openRewardEditor(player, crate, reward, rarity);
+            }
+        }
+    }
+
+    private void handleAllRewardsClick(Player player, InventoryClickEvent event) {
+        int slot = event.getRawSlot();
+        ItemStack item = event.getCurrentItem();
+        if (item == null || item.getType() == Material.AIR) return;
+
+        CrateData crate = gui.getPlayerCrate(player);
+        if (crate == null) {
+            gui.openMainMenu(player);
+            return;
+        }
+
+        if (slot == 49) { // Back
+            gui.openCrateEditor(player, crate);
+            return;
+        }
+        if (slot == 45) { // Previous
+            gui.getPrevPage(player);
+            gui.openAllRewardsList(player, crate);
+            return;
+        }
+        if (slot == 50) { // Next
+            gui.getNextPage(player);
+            gui.openAllRewardsList(player, crate);
+            return;
+        }
+
+        if (slot >= 0 && slot < 45) {
+            List<RewardData> allRewards = new ArrayList<>(crate.getRewards().values());
+            allRewards.sort((a, b) -> {
+                double chanceA = crate.getRewardChance(a.getId());
+                double chanceB = crate.getRewardChance(b.getId());
+                return Double.compare(chanceB, chanceA);
+            });
+
+            int page = gui.getPrevPage(player);
+            int start = page * 45;
+
+            if (start + slot < allRewards.size()) {
+                RewardData reward = allRewards.get(start + slot);
+                RarityData rarity = crate.getRarity(reward.getRarityId());
+                if (rarity != null) {
+                    gui.openRewardEditor(player, crate, reward, rarity);
+                }
             }
         }
     }
@@ -176,58 +263,68 @@ public class GUIListener implements Listener {
     private void handleRewardEditClick(Player player, InventoryClickEvent event) {
         int slot = event.getRawSlot();
         ItemStack item = event.getCurrentItem();
-        if (item == null) return;
+        if (item == null || item.getType() == Material.AIR) return;
 
         CrateData crate = gui.getPlayerCrate(player);
-        if (crate == null) return;
-
         String rarityId = gui.getPlayerRarity(player);
-        if (rarityId == null) return;
+        String rewardId = gui.getPlayerReward(player);
+
+        if (crate == null || rarityId == null || rewardId == null) {
+            gui.openMainMenu(player);
+            return;
+        }
 
         RarityData rarity = crate.getRarity(rarityId);
-        if (rarity == null) return;
+        RewardData reward = crate.getReward(rewardId);
 
-        Collection<RewardData> rewardCollection = crate.getRewardsByRarity(rarityId);
-        if (rewardCollection.isEmpty()) return;
-
-        RewardData reward = rewardCollection.iterator().next();
+        if (reward == null || rarity == null) {
+            gui.openCrateEditor(player, crate);
+            return;
+        }
 
         double currentWeight = reward.getWeight();
         double newWeight = currentWeight;
+        boolean changed = false;
 
         switch (slot) {
-            case 10 -> newWeight = Math.max(0.5, currentWeight - 1);
-            case 11 -> newWeight = Math.max(0.5, currentWeight - 0.5);
-            case 15 -> newWeight = currentWeight + 0.5;
-            case 16 -> newWeight = currentWeight + 1;
-            case 22 -> newWeight = 10;
-            case 26 -> {
+            case 10 -> { newWeight = Math.max(0.5, currentWeight - 1.0); changed = true; }
+            case 11 -> { newWeight = Math.max(0.5, currentWeight - 0.1); changed = true; }
+            case 14, 15, 16 -> { newWeight = currentWeight + 0.1; changed = true; }
+            case 19 -> { newWeight = 50.0; changed = true; }
+            case 20 -> { newWeight = 25.0; changed = true; }
+            case 21 -> { newWeight = 10.0; changed = true; }
+            case 22 -> { newWeight = 5.0; changed = true; }
+            case 23 -> { newWeight = 1.0; changed = true; }
+            case 31 -> { // Close
                 gui.openRarityEditor(player, crate, rarity);
                 return;
             }
-            default -> { return; }
+            case 35 -> { // Back
+                gui.openRarityEditor(player, crate, rarity);
+                return;
+            }
         }
 
-        dataManager.setRewardWeight(crate.getId(), reward.getId(), newWeight);
-        crate = dataManager.getCrate(crate.getId());
-        reward = crate.getReward(reward.getId());
-        
-        player.sendMessage(ChatColor.GREEN + "Weight set to " + newWeight + 
-                " (Chance: " + String.format("%.4f%%", crate.getRewardChance(reward.getId())) + ")");
-        
-        gui.openRewardEditor(player, crate, reward);
+        if (changed && newWeight != currentWeight) {
+            dataManager.setRewardWeight(crate.getId(), rewardId, newWeight);
+            crate = dataManager.getCrate(crate.getId());
+            reward = crate.getReward(rewardId);
+            rarity = crate.getRarity(rarityId);
+            
+            double chance = crate.getRewardChance(rewardId);
+            player.sendMessage(ChatColor.GREEN + "✓ Weight: " + newWeight + " (Chance: " + 
+                    String.format("%.4f%%", chance) + ")");
+        }
+
+        if (reward != null && rarity != null) {
+            gui.openRewardEditor(player, crate, reward, rarity);
+        }
     }
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getPlayer() instanceof Player player) {
-            String title = event.getView().getTitle();
-            if (title.startsWith(ChatColor.DARK_PURPLE + "Crates Editor") ||
-                title.startsWith(ChatColor.DARK_PURPLE + "Crate:") ||
-                title.startsWith(ChatColor.DARK_AQUA + "Rarity:") ||
-                title.startsWith(ChatColor.DARK_GREEN + "Edit Reward")) {
-                gui.clearPlayerData(player);
-            }
+            gui.clearPlayerData(player);
         }
     }
 }

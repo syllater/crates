@@ -34,8 +34,13 @@ public class CratesEditorCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            return true;
+        }
+
         if (args.length == 0) {
-            sendHelp(sender);
+            plugin.getGUI().openMainMenu(player);
             return true;
         }
 
@@ -49,7 +54,7 @@ public class CratesEditorCommand implements CommandExecutor, TabCompleter {
             case "setrarity" -> handleSetRarity(sender, args);
             case "balance" -> handleBalance(sender, args);
             case "scale" -> handleScale(sender, args);
-            default -> sendHelp(sender);
+            default -> plugin.getGUI().openMainMenu(player);
         }
 
         return true;

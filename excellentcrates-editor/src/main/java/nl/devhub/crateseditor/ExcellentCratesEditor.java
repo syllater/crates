@@ -6,6 +6,7 @@ import nl.devhub.crateseditor.commands.CratesPercentagesCommand;
 import nl.devhub.crateseditor.commands.CratesScaleCommand;
 import nl.devhub.crateseditor.gui.CratesEditorGUI;
 import nl.devhub.crateseditor.gui.GUIListener;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -36,7 +37,7 @@ public class ExcellentCratesEditor extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GUIListener(this, gui), this);
         
         getLogger().info("ExcellentCrates Editor enabled!");
-        getLogger().info("Use /ce or /crateseditor to open the GUI editor");
+        getLogger().info("Use " + ChatColor.YELLOW + "/ce" + ChatColor.WHITE + " to open the GUI editor");
     }
 
     @Override

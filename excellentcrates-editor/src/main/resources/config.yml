@@ -1,0 +1,25 @@
+# ExcellentCrates Editor Configuration
+
+# Auto-reload crates when plugin detects changes
+auto-reload: true
+
+# Show detailed percentage info in tooltips
+show-tooltips: true
+
+# Default balance mode (equal = all same %, manual = use config values)
+balance-mode: equal
+
+# Decimal places for percentage display
+decimal-places: 4
+
+# Messages
+messages:
+  prefix: "&6[CratesEditor] "
+  no-permission: "&cYou don't have permission to use this command."
+  crate-not-found: "&cCrate not found: {crate}"
+  rarity-not-found: "&cRarity not found: {rarity}"
+  reward-not-found: "&cReward not found: {reward}"
+  weight-set: "&aSet weight of {item} to {weight}"
+  rarity-moved: "&aMoved {reward} to rarity {rarity}"
+  balanced: "&aSuccessfully balanced weights"
+  scaled: "&aScaled {rarity} to {percentage}%"

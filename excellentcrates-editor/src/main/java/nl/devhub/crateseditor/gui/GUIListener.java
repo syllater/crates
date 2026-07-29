@@ -130,6 +130,8 @@ public class GUIListener implements Listener {
                 CrateData crate = crateList.get(start + slot);
                 String mode = gui.getPlayerMode(player);
                 
+                if (mode == null) mode = "edit";
+                
                 switch (mode) {
                     case "balance" -> {
                         dataManager.balanceAllRarities(crate.getId());

@@ -5,7 +5,6 @@ import nl.devhub.crateseditor.CrateDataManager.CrateData;
 import nl.devhub.crateseditor.CrateDataManager.RarityData;
 import nl.devhub.crateseditor.CrateDataManager.RewardData;
 import nl.devhub.crateseditor.ExcellentCratesEditor;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,23 +12,17 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 public class GUIListener implements Listener {
 
     private final ExcellentCratesEditor plugin;
     private final CratesEditorGUI gui;
     private final CrateDataManager dataManager;
-    
-    private final Set<UUID> openGUIs = new HashSet<>();
 
     public GUIListener(ExcellentCratesEditor plugin, CratesEditorGUI gui) {
         this.plugin = plugin;
@@ -37,100 +30,51 @@ public class GUIListener implements Listener {
         this.dataManager = plugin.getDataManager();
     }
 
-    private boolean isOurGUI(Inventory inv) {
-        if (inv == null) return false;
-        String title = ChatColor.stripColor(inv.getHolder() instanceof org.bukkit.inventory.InventoryHolder ? 
-            ((org.bukkit.inventory.InventoryHolder)inv.getHolder()).getInventory().getTitle() : inv.getTitle());
-        
-        // Use raw title from event instead
-        return false;
-    }
-
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
-        Inventory topInv = event.getView().getTopInventory();
-        
-        if (!isOurGUI(topInv)) return;
+        String title = ChatColor.stripColor(event.getView().getTitle());
+
+        if (!isOurGUI(title)) return;
         
         event.setCancelled(true);
         
         if (event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) return;
 
         int slot = event.getRawSlot();
-        String title = ChatColor.stripColor(topInv.getTitle());
 
-        // Main Menu
-        if (title.equals("Crate % Editor")) {
-            handleMainMenu(player, slot);
-            return;
+        switch (title) {
+            case "Crate % Editor" -> handleMainMenu(player, slot);
+            case "Select Crate" -> handleCrateSelect(player, slot);
+            default -> {
+                if (title.startsWith("Crate:")) handleCrateEditor(player, slot);
+                else if (title.startsWith("Rarity Editor:")) handleRarityEditor(player, slot);
+                else if (title.startsWith("Edit Rarity:")) handleRarityWeight(player, slot);
+                else if (title.contains("Rewards") && !title.equals("Select Crate") && !title.startsWith("All Rewards:")) handleRarityRewards(player, slot);
+                else if (title.startsWith("All Rewards:")) handleAllRewards(player, slot);
+                else if (title.startsWith("Edit:")) handleRewardEditor(player, slot);
+                else if (title.startsWith("Bulk Edit:")) handleBulkEdit(player, slot);
+                else if (title.startsWith("Statistics:")) handleStatistics(player, slot);
+                else if (title.equals("Search Rewards")) handleSearch(player, slot);
+                else if (title.startsWith("Scale:")) handleScale(player, slot);
+            }
         }
+    }
 
-        // Crate Selection
-        if (title.equals("Select Crate")) {
-            handleCrateSelect(player, slot);
-            return;
-        }
-
-        // Crate Editor
-        if (title.startsWith("Crate:")) {
-            handleCrateEditor(player, slot);
-            return;
-        }
-
-        // Rarity Editor List
-        if (title.startsWith("Rarity Editor:")) {
-            handleRarityEditor(player, slot);
-            return;
-        }
-
-        // Rarity Weight Editor
-        if (title.startsWith("Edit Rarity:")) {
-            handleRarityWeight(player, slot);
-            return;
-        }
-
-        // Rarity Rewards List
-        if (title.contains("Rewards") && !title.equals("Select Crate") && !title.startsWith("All Rewards:")) {
-            handleRarityRewards(player, slot);
-            return;
-        }
-
-        // All Rewards List
-        if (title.startsWith("All Rewards:")) {
-            handleAllRewards(player, slot);
-            return;
-        }
-
-        // Reward Editor
-        if (title.startsWith("Edit:")) {
-            handleRewardEditor(player, slot);
-            return;
-        }
-
-        // Bulk Edit
-        if (title.startsWith("Bulk Edit:")) {
-            handleBulkEdit(player, slot);
-            return;
-        }
-
-        // Statistics
-        if (title.startsWith("Statistics:")) {
-            handleStatistics(player, slot);
-            return;
-        }
-
-        // Search
-        if (title.equals("Search Rewards")) {
-            handleSearch(player, slot);
-            return;
-        }
-
-        // Scale Menu
-        if (title.startsWith("Scale:")) {
-            handleScale(player, slot);
-        }
+    private boolean isOurGUI(String title) {
+        return title.equals("Crate % Editor") ||
+               title.equals("Select Crate") ||
+               title.startsWith("Crate:") ||
+               title.startsWith("Rarity Editor:") ||
+               title.startsWith("Edit Rarity:") ||
+               title.contains("Rewards") ||
+               title.startsWith("All Rewards:") ||
+               title.startsWith("Edit:") ||
+               title.startsWith("Bulk Edit:") ||
+               title.startsWith("Statistics:") ||
+               title.equals("Search Rewards") ||
+               title.startsWith("Scale:");
     }
 
     private void handleMainMenu(Player player, int slot) {
@@ -223,8 +167,7 @@ public class GUIListener implements Listener {
 
         if (slot == 45) { gui.getPrevPage(player); gui.openRarityEditor(player, crate); return; }
         if (slot == 50) { gui.getNextPage(player); gui.openRarityEditor(player, crate); return; }
-        if (slot == 49) { gui.openCrateEditor(player, crate); return; }
-        if (slot == 53) { gui.openCrateEditor(player, crate); return; }
+        if (slot == 49 || slot == 53) { gui.openCrateEditor(player, crate); return; }
 
         if (slot >= 0 && slot < 36) {
             List<RarityData> rarityList = new ArrayList<>(crate.getRarities().values());
@@ -379,11 +322,7 @@ public class GUIListener implements Listener {
             return;
         }
 
-        if (slot == 48) { // Clear
-            gui.getPlayerSelectedRewards(player).clear();
-            gui.openBulkEdit(player, crate);
-            return;
-        }
+        if (slot == 48) { gui.getPlayerSelectedRewards(player).clear(); gui.openBulkEdit(player, crate); return; }
 
         if (slot >= 0 && slot < 45) {
             List<RewardData> rewards = new ArrayList<>(crate.getRewards().values());

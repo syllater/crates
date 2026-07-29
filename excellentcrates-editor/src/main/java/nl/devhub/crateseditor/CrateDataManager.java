@@ -27,27 +27,42 @@ public class CrateDataManager {
     public void loadAll() {
         crates.clear();
         
+        plugin.getLogger().info("Loading crates from: " + cratesFolder.getPath());
+        plugin.getLogger().info("Crates folder exists: " + cratesFolder.exists());
+        
         if (!cratesFolder.exists() || !cratesFolder.isDirectory()) {
             plugin.getLogger().warning("ExcellentCrates crates folder not found: " + cratesFolder.getPath());
             return;
         }
 
         File[] files = cratesFolder.listFiles((dir, name) -> name.endsWith(".yml"));
-        if (files == null) return;
+        if (files == null) {
+            plugin.getLogger().warning("No .yml files found in crates folder");
+            return;
+        }
 
+        plugin.getLogger().info("Found " + files.length + " crate files");
+        
         for (File file : files) {
             CrateData crateData = loadCrateFile(file);
             if (crateData != null) {
                 crates.put(crateData.getId(), crateData);
+                plugin.getLogger().info("Loaded crate: " + crateData.getId() + " with " + 
+                    crateData.getRewards().size() + " rewards and " + 
+                    crateData.getRarities().size() + " rarities");
             }
         }
-        
-        plugin.getLogger().info("Loaded " + crates.size() + " crates from ExcellentCrates");
+
+        plugin.getLogger().info("Total loaded: " + crates.size() + " crates");
     }
 
     private CrateData loadCrateFile(File file) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
         String crateId = file.getName().replace(".yml", "");
+
+        plugin.getLogger().info("Loading crate file: " + file.getName());
+        plugin.getLogger().info("  Has Rarities: " + config.contains("Rarities"));
+        plugin.getLogger().info("  Has Rewards: " + config.contains("Rewards"));
         
         CrateData crateData = new CrateData(crateId, file);
         

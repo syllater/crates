@@ -8,6 +8,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
+import java.util.List;
+
 public class CrateGUICommand implements CommandExecutor, TabCompleter {
 
     private final ExcellentCratesEditor plugin;
@@ -30,5 +33,10 @@ public class CrateGUICommand implements CommandExecutor, TabCompleter {
 
         plugin.getGUI().openMainMenu(player);
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        return Collections.emptyList();
     }
 }

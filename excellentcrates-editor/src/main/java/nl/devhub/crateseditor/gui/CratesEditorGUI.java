@@ -804,7 +804,7 @@ public class CratesEditorGUI {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         
-        String displayName = selected ? ChatColor.GREEN + "✓ " : ChatColor.WHITE;
+        String displayName = selected ? (ChatColor.GREEN + "✓ ") : (ChatColor.WHITE + "");
         displayName += reward.getPreviewName();
         meta.setDisplayName(displayName);
         

@@ -40,7 +40,7 @@ public class CratesEditorGUI {
     }
 
     public void openMainMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27, ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "⚡ Crate % Editor");
+        Inventory inv = Bukkit.createInventory(null, 27, ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "Crate % Editor");
 
         ItemStack cratesBtn = new ItemStack(Material.ENDER_CHEST);
         ItemMeta meta = cratesBtn.getItemMeta();
@@ -104,7 +104,7 @@ public class CratesEditorGUI {
 
         ItemStack bulkBtn = new ItemStack(Material.HOPPER);
         meta = bulkBtn.getItemMeta();
-        meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "📋 Bulk Edit");
+        meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "Bulk Edit");
         meta.setLore(Arrays.asList(
                 ChatColor.GRAY + "Select multiple rewards",
                 ChatColor.GRAY + "and edit them together",
@@ -167,7 +167,7 @@ public class CratesEditorGUI {
             case "scale" -> "📐 Scale Rarity";
             case "rarity" -> "🎯 Rarity Editor";
             case "search" -> "🔍 Search";
-            case "bulk" -> "📋 Bulk Edit";
+            case "bulk" -> "Bulk Edit";
             default -> "📦 Edit";
         };
         meta.setDisplayName(ChatColor.WHITE + "Mode: " + modeName);
@@ -542,7 +542,7 @@ public class CratesEditorGUI {
 
     public void openBulkEdit(Player player, CrateData crate) {
         Inventory inv = Bukkit.createInventory(null, 54, 
-                ChatColor.AQUA + "" + ChatColor.BOLD + "📋 Bulk Edit: " + ChatColor.WHITE + crate.getId());
+                ChatColor.AQUA + "" + ChatColor.BOLD + "Bulk Edit: " + ChatColor.WHITE + crate.getId());
 
         Set<String> selected = playerSelectedRewards.getOrDefault(player.getUniqueId(), new HashSet<>());
         List<RewardData> allRewards = new ArrayList<>(crate.getRewards().values());

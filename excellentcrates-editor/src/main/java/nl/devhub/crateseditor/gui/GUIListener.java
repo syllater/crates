@@ -44,37 +44,43 @@ public class GUIListener implements Listener {
 
         int slot = event.getRawSlot();
 
-        switch (title) {
-            case "Crate % Editor" -> handleMainMenu(player, slot);
-            case "Select Crate" -> handleCrateSelect(player, slot);
-            default -> {
-                if (title.startsWith("Crate:")) handleCrateEditor(player, slot);
-                else if (title.startsWith("Rarity Editor:")) handleRarityEditor(player, slot);
-                else if (title.startsWith("Edit Rarity:")) handleRarityWeight(player, slot);
-                else if (title.contains("Rewards") && !title.equals("Select Crate") && !title.startsWith("All Rewards:")) handleRarityRewards(player, slot);
-                else if (title.startsWith("All Rewards:")) handleAllRewards(player, slot);
-                else if (title.startsWith("Edit:")) handleRewardEditor(player, slot);
-                else if (title.startsWith("Bulk Edit:")) handleBulkEdit(player, slot);
-                else if (title.startsWith("Statistics:")) handleStatistics(player, slot);
-                else if (title.equals("Search Rewards")) handleSearch(player, slot);
-                else if (title.startsWith("Scale:")) handleScale(player, slot);
-            }
+        if (title.equals("Crate % Editor")) {
+            handleMainMenu(player, slot);
+        } else if (title.equals("Select Crate")) {
+            handleCrateSelect(player, slot);
+        } else if (title.startsWith("Crate:")) {
+            handleCrateEditor(player, slot);
+        } else if (title.startsWith("Rarity Editor:")) {
+            handleRarityEditor(player, slot);
+        } else if (title.startsWith("Edit Rarity:")) {
+            handleRarityWeight(player, slot);
+        } else if (title.contains("Rewards") && !title.equals("Select Crate") && !title.startsWith("All Rewards:")) {
+            handleRarityRewards(player, slot);
+        } else if (title.startsWith("All Rewards:")) {
+            handleAllRewards(player, slot);
+        } else if (title.startsWith("Edit:")) {
+            handleRewardEditor(player, slot);
+        } else if (title.startsWith("Bulk Edit:")) {
+            handleBulkEdit(player, slot);
+        } else if (title.startsWith("Statistics:")) {
+            handleStatistics(player, slot);
+        } else if (title.equals("Search Rewards")) {
+            handleSearch(player, slot);
+        } else if (title.startsWith("Scale:")) {
+            handleScale(player, slot);
         }
     }
 
     private boolean isOurGUI(String title) {
-        return title.equals("Crate % Editor") ||
-               title.equals("Select Crate") ||
-               title.startsWith("Crate:") ||
-               title.startsWith("Rarity Editor:") ||
-               title.startsWith("Edit Rarity:") ||
+        // Simple check - if the title starts with common prefixes, it's our GUI
+        return title.contains("Crate") ||
                title.contains("Rewards") ||
-               title.startsWith("All Rewards:") ||
-               title.startsWith("Edit:") ||
-               title.startsWith("Bulk Edit:") ||
-               title.startsWith("Statistics:") ||
-               title.equals("Search Rewards") ||
-               title.startsWith("Scale:");
+               title.contains("Rarity") ||
+               title.contains("Edit") ||
+               title.contains("Bulk") ||
+               title.contains("Stats") ||
+               title.contains("Search") ||
+               title.contains("Scale");
     }
 
     private void handleMainMenu(Player player, int slot) {

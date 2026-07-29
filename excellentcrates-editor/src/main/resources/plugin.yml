@@ -1,0 +1,28 @@
+name: ExcellentCratesEditor
+version: 1.0.0
+main: nl.devhub.crateseditor.ExcellentCratesEditor
+api-version: '1.21'
+authors:
+  - DevHub
+description: Easy percentage editor for ExcellentCrates plugin
+commands:
+  crateseditor:
+    description: Main command for ExcellentCrates Editor
+    usage: /crateseditor <subcommand>
+    aliases: [ce, crateeditor]
+  cratespercentages:
+    description: View and manage crate percentages
+    usage: /cratespercentages <crate> [rarity] [page]
+    aliases: [cp]
+  cratesbalance:
+    description: Auto-balance crate percentages
+    usage: /cratesbalance <crate> [rarity]
+    aliases: [cb]
+  cratesscale:
+    description: Scale rarity weights to match percentages
+    usage: /cratesscale <crate> <rarity> <percentage>
+    aliases: [cs]
+permissions:
+  crateseditor.use:
+    description: Allows using the ExcellentCrates Editor
+    default: op

@@ -261,42 +261,6 @@ public class CratesEditorGUI {
         player.openInventory(inv);
     }
 
-    public void openRarityEditor(Player player, CrateData crate) {
-        Inventory inv = Bukkit.createInventory(null, 54, 
-                ChatColor.GOLD + "" + ChatColor.BOLD + "🎯 Rarity Editor: " + ChatColor.WHITE + crate.getId());
-
-        int slot = 0;
-        for (RarityData rarity : crate.getRarities().values()) {
-            if (slot < 36) {
-                double chance = crate.getRarityChance(rarity.getId());
-                ItemStack item = createRarityEditItem(rarity, chance);
-                inv.setItem(slot, item);
-                slot++;
-            }
-        }
-
-        // Info panel
-        ItemStack infoBtn = new ItemStack(Material.BEACON);
-        ItemMeta meta = infoBtn.getItemMeta();
-        meta.setDisplayName(ChatColor.WHITE + "Rarity Info");
-        meta.setLore(Arrays.asList(
-                ChatColor.GRAY + "Click a rarity to",
-                ChatColor.GRAY + "edit its weight"
-        ));
-        infoBtn.setItemMeta(meta);
-        inv.setItem(49, infoBtn);
-
-        ItemStack backBtn = new ItemStack(Material.BARRIER);
-        meta = backBtn.getItemMeta();
-        meta.setDisplayName(ChatColor.RED + "Back");
-        backBtn.setItemMeta(meta);
-        inv.setItem(53, backBtn);
-
-        setBorderItems(inv);
-
-        player.openInventory(inv);
-    }
-
     public void openRarityWeightEditor(Player player, CrateData crate, RarityData rarity) {
         playerEditingRarity.put(player.getUniqueId(), rarity.getId());
         double currentChance = crate.getRarityChance(rarity.getId());
@@ -740,32 +704,6 @@ public class CratesEditorGUI {
         lore.add(ChatColor.GRAY + "Rewards: " + ChatColor.WHITE + rewardCount);
         lore.add("");
         lore.add(ChatColor.YELLOW + "▶ Click to view rewards");
-        meta.setLore(lore);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    private ItemStack createRarityEditItem(RarityData rarity, double chance) {
-        Material material = switch (rarity.getName().toLowerCase()) {
-            case "legendary", "legend", "mythic" -> Material.NETHER_STAR;
-            case "epic" -> Material.DIAMOND;
-            case "rare" -> Material.AMETHYST_SHARD;
-            case "uncommon" -> Material.EMERALD;
-            case "common", "basic" -> Material.COAL;
-            default -> Material.DIAMOND;
-        };
-
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(ChatColor.WHITE + rarity.getName());
-        
-        List<String> lore = new ArrayList<>();
-        lore.add(ChatColor.GOLD + "Chance: " + getChanceColor(chance) + String.format("%.2f%%", chance));
-        lore.add(ChatColor.GRAY + "Weight: " + ChatColor.WHITE + rarity.getWeight());
-        lore.add("");
-        lore.add(ChatColor.YELLOW + "▶ Click to edit weight");
         meta.setLore(lore);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         
